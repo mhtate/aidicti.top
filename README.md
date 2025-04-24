@@ -7,24 +7,27 @@ A personal Telegram bot written in Go that helps you build and practice your own
 ## ✨ Features
 
 - 🔍 Translate English words using Oxford Dictionary
-- 🎙️ Send a **voice message** to translate a spoken word or phrase *(no Telegram Premium required)* — powered by Go speech-to-text
-- 📖 Add translations to your private dictionary
+- 🎙️ Send a **voice message** to translate a spoken word or phrase *(no Telegram Premium required)* — powered by Google speech-to-text
+- 📖 Add senses to your private dictionary
 - 🧠 Practice learned words by generating example sentences via ChatGPT
-- 🗂️ Store your own word list for future reference
 
 ## 📦 Tech Stack
 
-- **Go** (Golang)
+- **Go** (Golang 1.23+)
 - **[go-telegram-bot](https://github.com/go-telegram/bot)** for Telegram Bot API
-- **Oxford Dictionaries API** for definitions and translations
-- **OpenAI ChatGPT API** for sentence generation
-- **Speech-to-Text** using Go libraries or external services (e.g., Whisper, Google STT)
+- **[consul](https://github.com/hashicorp/consul/api)** for service discovery
+- **[oxford dictionary](https://www.oxfordlearnersdictionaries.com/)** for definitions and senses
+- **[google grpc](https://pkg.go.dev/google.golang.org/grpc)** for communication between microservices
+- **[google cloud speechpb](https://cloud.google.com/go/speech/apiv1/speechpb)** for speech-to-text from voicemessages
+- **[gorm](https://gorm.io/)** for ORM modeling with the Postgres driver
+- **[redis](https://github.com/go-redis/redis/v7/)** for temporary data storage
+- **[chatgpt api](https://github.com/sashabaranov/go-openai)** for generating and checking sentences
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- Go 1.20+
+- Go 1.23+
 - Telegram Bot Token
 - Oxford Dictionaries API credentials
 - OpenAI API Key
