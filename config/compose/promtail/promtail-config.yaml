@@ -1,0 +1,29 @@
+server:
+  http_listen_port: 9080
+  log_level: warn
+
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://aidicti_loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: aidicti-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: aidicti-logs
+          __path__: "/var/lib/docker/containers/*/*.log"
+
+    pipeline_stages:
+      - docker: {}
+    journal:
+      json: false
+    # relabel_configs:
+    #   - source_labels: [__path__]
+    #     regex: "/var/lib/docker/containers/(?P<container_id>.*)/.*.log"
+    #     target_label: container_id
+          

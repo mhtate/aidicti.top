@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+option go_package = "aidicti.top/api/protogen_cmn";
+
+package common;
+
+// option go_package = "example.com/commonpb";
+
+message ReqData {
+  uint64 reqId = 1;
+  uint64 dlgId = 2;
+}
+
+//protoc --go_out=. --go-grpc_out=. --plugin=/home/mhtate/go/bin/protoc-gen-go-grpc cmn.proto stt.proto

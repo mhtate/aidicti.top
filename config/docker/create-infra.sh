@@ -1,0 +1,1 @@
+docker network create --driver bridge --subnet=192.168.144.0/26 aidicti_net

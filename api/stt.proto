@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+option go_package = "aidicti.top/api/protogen_stt";
+
+import "cmn.proto";
+
+service STTService {
+  rpc TranscriptAudio(TranscriptAudioRequest) returns (TranscriptAudioResponse);
+}
+
+message AudioFileS {
+  bytes data = 1;
+}
+
+message TranscriptAudioRequest {
+  common.ReqData id = 1;
+  uint64 request_id = 2;
+  uint64 user_id = 3;
+  AudioFileS data  = 4;
+}
+
+message TranscriptAudioResponse {
+  common.ReqData id = 1;
+  uint64 request_id = 2;
+  uint64 user_id = 3;
+  string transcription = 4;
+}

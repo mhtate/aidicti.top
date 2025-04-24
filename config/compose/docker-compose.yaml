@@ -1,0 +1,197 @@
+version: '3.8'
+
+networks:
+  aidicti_net:
+    driver: bridge
+
+volumes:
+  aidicti_keys:
+    name: aidicti_keys
+  aidicti_data:
+    name: aidicti_data
+
+services:
+  aidicti_loki:
+    image: grafana/loki:3.4.1
+    container_name: aidicti_loki
+    command: -config.file=/etc/loki/loki-config.yaml
+    volumes:
+      - ./loki:/etc/loki
+    networks:
+      - aidicti_net
+
+  aidicti_promtail:
+    image: grafana/promtail:3.4.1
+    container_name: aidicti_promtail
+    command: -config.file=/etc/promtail/promtail-config.yaml
+    environment:
+      - GF_LOG_LEVEL=warn
+    depends_on:
+      - aidicti_loki
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./promtail:/etc/promtail
+    networks:
+      - aidicti_net
+
+  aidicti_grafana:
+    image: grafana/grafana:latest
+    container_name: aidicti_grafana
+    ports:
+      - "3000:9733"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - aidicti_promtail
+    networks:
+      - aidicti_net
+
+  aidicti_consul:
+    image: hashicorp/consul:latest
+    container_name: aidicti_consul
+    command: "agent -server -ui -node=aidicti -bootstrap-expect=1 -client=0.0.0.0"
+    ports:
+      - "8500:8500"
+      - "8600:8600/udp"
+    networks:
+      - aidicti_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://aidicti_consul:8500/v1/status/leader"]
+      interval: 1s
+      timeout: 1s
+      retries: 10
+
+  aidicti_stt:
+    image: aidicti/stt:latest
+    command: "-reg=\"aidicti_consul:8500\""
+    depends_on:
+      aidicti_consul:
+        condition: service_healthy
+    networks:
+      - aidicti_net
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/keys/google_cred.json
+    volumes:
+      - aidicti_keys:/keys:ro
+    deploy:
+      replicas: 1
+
+  aidicti_gpt:
+    image: aidicti/gpt:latest
+    command: "-reg=\"aidicti_consul:8500\""
+    depends_on:
+      aidicti_consul:
+        condition: service_healthy
+    networks:
+      - aidicti_net
+    environment:
+      - OPENAI_APPLICATION_CREDENTIALS=/keys/openai_cred.json
+    volumes:
+      - aidicti_keys:/keys:ro
+    deploy:
+      replicas: 1
+
+  aidicti_scn:
+    image: aidicti/scn:latest
+    command: "-reg=\"aidicti_consul:8500\""
+    depends_on:
+      aidicti_consul:
+        condition: service_healthy
+      aidicti_dbs: 
+        condition: service_started
+    networks:
+      - aidicti_net
+    deploy:
+      replicas: 1
+
+  aidicti_tlg:
+    image: aidicti/tlg:latest
+    command: "-reg=\"aidicti_consul:8500\""
+    depends_on:
+      aidicti_consul:
+        condition: service_healthy
+    networks:
+      - aidicti_net
+    environment:
+      - TELEGRAM_APPLICATION_CREDENTIALS=/keys/telegram_cred.json
+    volumes:
+      - aidicti_keys:/keys:ro
+    deploy:
+      replicas: 1
+
+  aidicti_oxf:
+    image: aidicti/oxf:latest
+    command: "-reg=\"aidicti_consul:8500\""
+    depends_on:
+      aidicti_consul:
+        condition: service_healthy
+    networks:
+      - aidicti_net
+    deploy:
+      replicas: 1
+
+  aidicti_uis:
+    image: aidicti/uis:latest
+    command: "-reg=\"aidicti_consul:8500\""
+    depends_on:
+      aidicti_consul:
+        condition: service_healthy
+      aidicti_dbs: 
+        condition: service_started
+    networks:
+      - aidicti_net
+    deploy:
+      replicas: 1
+
+  aidicti_dbs:
+    image: postgres:17
+    container_name: aidicti_postgres
+    restart: always
+    # env_file: /keys/postgres_cred.ini
+    env_file: /home/mhtate/.local/ai_dictionary_keys/postgres_cred.ini
+    # ports:
+    #   - "5432:5384"
+    volumes:
+      - aidicti_keys:/keys:ro
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - aidicti_net
+
+  #  image: curlimages/curl
+  #   container_name: postgres-registrator
+  #   depends_on:
+  #     - consul
+  #     - postgres
+  #   networks:
+  #     - consul_network
+  #   entrypoint: >
+  #     sh -c "sleep 5 && curl --request PUT --data '{
+  #       \"Name\": \"postgres\",
+  #       \"ID\": \"postgres-1\",
+  #       \"Tags\": [\"database\", \"postgres\"],
+  #       \"Address\": \"postgres\",
+  #       \"Port\": 5432,
+  #       \"Check\": {
+  #         \"ID\": \"postgres-check\",
+  #         \"Name\": \"PostgreSQL health check\",
+  #         \"TCP\": \"postgres:5432\",
+  #         \"Interval\": \"10s\",
+  #         \"Timeout\": \"2s\"
+  #       }
+  #     }' http://consul:8500/v1/agent/service/register"
+
+  aidicti_redis:
+    image: redis:latest
+    container_name: aidicti_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+      # - redis_data:/data
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    environment:
+      - REDIS_PASSWORD=yourpassword
+    networks:
+      - aidicti_net

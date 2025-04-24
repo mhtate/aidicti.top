@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option go_package = "aidicti.top/api/protogen_uis";
+
+import "cmn.proto";
+
+service ServiceUIS {
+  rpc CreateButton (Button)   returns (ButtonInfo);
+  rpc GetButton    (ButtonId) returns (ButtonInfo);
+	rpc ClickButton  (ButtonId) returns (ButtonInfo);
+}
+
+message ButtonId {
+  common.ReqData id = 1;
+  uint64 ButtonId = 2;
+}
+
+message Button {
+  common.ReqData id = 1;
+  repeated string Text = 2;
+	uint64 Type = 3;
+  bytes Meta = 4;
+}
+
+message ButtonInfo {
+  common.ReqData id = 1;
+	ButtonId ButtonId = 2;
+  string Text = 3;
+	uint64 Type = 4;
+}

@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+option go_package = "aidicti.top/api/protogen_oxf";
+
+import "cmn.proto";
+
+service ServiceOXF {
+  rpc GetDictEntry(Word) returns (DictionaryEntry);
+}
+
+message Word {
+	common.ReqData id = 1;
+	string Text = 2;
+}
+
+message Example {
+	string Usage = 1;   
+	string Example = 2;
+}
+
+message Sense {
+	string Def = 1;
+  string Usage = 2;
+  string Grammar = 3;
+	repeated Example examples = 4;
+	int32 Pos = 5;
+}
+
+message Idiom {
+	string Phrase = 1;
+	Sense sense = 2;
+}
+
+message Pronunciation {
+	string Lang = 1;     
+	string Phonetic = 2;
+	string Sound = 3;
+}
+
+message DictionaryEntry {
+	common.ReqData id = 1;
+	string Word = 2;
+	string PartOfSpeech = 3;
+	repeated Pronunciation pronunciations = 4;
+	// VerbForms     map[string]string
+	repeated Sense senses = 5;
+	repeated Idiom idioms = 6;
+	repeated RelatedWord RelatedWords = 7;
+	string Link = 8;
+}
+
+message RelatedWord {
+	string Text = 1;
+}

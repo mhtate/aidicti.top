@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+option go_package = "aidicti.top/api/protogen_gpt";
+
+import "cmn.proto";
+
+service AIProviderService {
+  rpc GetSentences(GetSentencesRequest) returns (GetSentencesResponse);
+  rpc CheckTranslations(CheckTranslationsRequest) returns (CheckTranslationsResponse);
+}
+
+message GetSentencesRequest {
+  common.ReqData id = 1;
+  repeated SentenceRequest sentence_request = 2;
+}
+
+message SentenceRequest {
+  uint64 id = 1;
+  string word = 2;
+  string word_description = 3;
+}
+
+message GetSentencesResponse {
+  common.ReqData id = 1;
+  repeated Sentence sentences = 2;
+}
+
+message CheckTranslationsRequest {
+  common.ReqData id = 1;
+  string sentences = 2;
+}
+
+message CheckTranslationsResponse {
+  common.ReqData id = 1;
+  repeated SentenceCheck sentences = 2;
+}
+
+message Sentence {
+  uint64 id = 1;
+  string original = 2;
+  string translation = 3;
+  string word = 4;
+}
+
+message SentenceCheck {
+  uint64 id = 1;
+	string correction = 2;
+	string explanation = 3;
+	uint64 rating = 4;
+}

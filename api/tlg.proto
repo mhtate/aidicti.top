@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+option go_package = "aidicti.top/api/protogen_tlg";
+
+import "cmn.proto";
+
+service TelegramService {
+  rpc TelegramChat(stream Message) returns (stream Message);
+}
+
+message AudioFile {
+  bytes data = 1;
+}
+
+message Action {
+  string type = 1;
+  string message = 2;
+  repeated string values = 3;
+}
+
+message Message {
+  uint64 user_id = 1;
+  string message = 2;
+  AudioFile audio = 3;
+  Action action = 4;
+  repeated uint64 actions = 5;
+}
